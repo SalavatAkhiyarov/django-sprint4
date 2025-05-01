@@ -11,7 +11,7 @@ from django.db.models import Count
 
 from .models import Category, Post, Comments
 from .constants import POSTS_LIMIT
-from .forms import CreatePost, ProfileForm, CommentForm
+from .forms import CreatePost, ProfileForm, CommentForm, CustomUserCreationForm
 
 User = get_user_model()
 
@@ -40,7 +40,7 @@ def category_posts(request, category_slug):
     )
     post_list = get_select_related(
         filter_posts_by_publication(
-            category.posts.all().annotate(comment_count=Count('comments')).order_by('-created_at')
+            category.posts.all().annotate(comment_count=Count('comments')).order_by('-pub_date')
         )
     )
     paginator = Paginator(post_list, 10)
@@ -72,7 +72,7 @@ def post_detail(request, pk):
 def index(request):
     post_list = get_select_related(
         filter_posts_by_publication(
-            Post.objects.annotate(comment_count=Count('comments')).order_by('-created_at')
+            Post.objects.annotate(comment_count=Count('comments')).order_by('-pub_date')
         )
     )
     paginator = Paginator(post_list, 10)
@@ -85,9 +85,10 @@ def index(request):
     )
 
 
+@login_required
 def profile_view(request, username):
     profile = get_object_or_404(User, username=username)
-    post_list = Post.objects.filter(author=profile).annotate(comment_count=Count('comments')).order_by('-created_at')
+    post_list = Post.objects.filter(author=profile).annotate(comment_count=Count('comments')).order_by('-pub_date')
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -103,6 +104,8 @@ def create_post(request):
             post.author = request.user
             post.save()
             return redirect('blog:profile', username=request.user.username)
+        else:
+            return render(request, 'blog/create.html', {'form': form})
     else:
         form = CreatePost()
     return render(request, 'blog/create.html', {'form': form})
@@ -130,12 +133,6 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
         return reverse_lazy('blog:post_detail', kwargs={'pk': self.object.pk})
 
 
-class PostDeleteView(LoginRequiredMixin, DeleteView):
-    model = Post
-    form_class = CreatePost
-    template_name = 'blog/detail.html'
-
-
 @login_required
 def delete_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
@@ -144,18 +141,6 @@ def delete_post(request, pk):
         post.delete()
         return redirect('blog:profile', username=request.user)
     return render(request, 'blog/create.html', {'form': form})
-
-
-class CommentCreateView(LoginRequiredMixin, CreateView):
-    model = Comments
-    form_class = CommentForm
-    template_name = 'blog/comments.html'
-
-
-class CommentUpdateView(LoginRequiredMixin, UpdateView):
-    model = Comments
-    form_class = CommentForm
-    template_name = 'blog/comments.html'
 
 
 @login_required
@@ -191,12 +176,7 @@ def add_comment(request, pk):
     return render(request, 'blog/comment.html', {'post': post, 'form': form, 'comments': post.comments.all()})     
 
 
-class CommentDeleteView(LoginRequiredMixin, DeleteView):
-    model = Comments
-    form_class = CommentForm
-    template_name = 'blog/comments.html'
-
-
+@login_required
 def delete_comment(request, post_id, comment_id):
     post = get_object_or_404(Post, pk=post_id)
     comment = get_object_or_404(Comments, pk=comment_id, post=post)
@@ -208,7 +188,8 @@ def delete_comment(request, post_id, comment_id):
 
 class UserCreateView(CreateView):
     template_name = 'registration/registration_form.html'
-    form_class = UserCreationForm
+    model = User
+    form_class = CustomUserCreationForm
 
     def form_valid(self, form):
         self.object = form.save()

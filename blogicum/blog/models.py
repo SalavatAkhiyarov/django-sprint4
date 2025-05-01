@@ -95,6 +95,7 @@ class Post(CreatedAtAndIsPublishedAbstract):
         verbose_name = "публикация"
         verbose_name_plural = "Публикации"
         ordering = ('-pub_date',)
+        #constraints = (models.UniqueConstraint(fields=('title', 'text', 'category', 'location', 'pub_date'), name='Unique post'),)
 
     def __str__(self):
         return self.title[:TITLE_LENGTH]
