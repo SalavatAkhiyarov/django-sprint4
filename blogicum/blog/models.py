@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-from .constants import MAX_LENGTH_CHAR_FIELD, TITLE_LENGTH
+from .constants import MAX_LENGTH_CHAR_FIELD, STR_TITLE_LIMIT
 
 User = get_user_model()
 
@@ -40,7 +40,7 @@ class Category(CreatedAtAndIsPublishedAbstract):
         verbose_name_plural = "Категории"
 
     def __str__(self):
-        return self.title[:TITLE_LENGTH]
+        return self.title[:STR_TITLE_LIMIT]
 
 
 class Location(CreatedAtAndIsPublishedAbstract):
@@ -54,7 +54,7 @@ class Location(CreatedAtAndIsPublishedAbstract):
         verbose_name_plural = "Местоположения"
 
     def __str__(self):
-        return self.name[:TITLE_LENGTH]
+        return self.name[:STR_TITLE_LIMIT]
 
 
 class Post(CreatedAtAndIsPublishedAbstract):
@@ -95,16 +95,33 @@ class Post(CreatedAtAndIsPublishedAbstract):
         verbose_name = "публикация"
         verbose_name_plural = "Публикации"
         ordering = ('-pub_date',)
-        #constraints = (models.UniqueConstraint(fields=('title', 'text', 'category', 'location', 'pub_date'), name='Unique post'),)
+        constraints = (
+            models.UniqueConstraint(
+                fields=(
+                    'title',
+                    'text',
+                    'category',
+                    'location',
+                    'pub_date'),
+                name='Unique post'),
+        )
 
     def __str__(self):
-        return self.title[:TITLE_LENGTH]
+        return self.title[:STR_TITLE_LIMIT]
 
 
 class Comments(models.Model):
     text = models.TextField(verbose_name="Комментарий")
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name="comments"
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name="Добавлено"
     )

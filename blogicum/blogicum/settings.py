@@ -101,3 +101,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 
 LOGIN_REDIRECT_URL = '/'
+
+LOGIN_URL = '/auth/login/'

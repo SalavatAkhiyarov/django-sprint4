@@ -12,18 +12,23 @@ class CreatePost(forms.ModelForm):
     class Meta:
         model = Post
         exclude = ('author',)
-        widgets = {'pub_date': forms.DateTimeInput(attrs={'type': 'datetime-local'})}
-    
-    #def clean(self):
-        #cleaned_data = super().clean()
-        #title = cleaned_data.get('title')
-        #text = cleaned_data.get('text')
-        #category = cleaned_data.get('category')
-        #location = cleaned_data.get('location')
-        #pub_date = cleaned_data.get('pub_date')
-        #if Post.objects.filter(title=title, text=text, category=category, location=location, pub_date=pub_date).exists():
-            #raise ValidationError('Такой пост уже существует')
-        #return cleaned_data
+        widgets = {
+            'pub_date': forms.DateTimeInput(
+                attrs={
+                    'type': 'datetime-local'})
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        title = cleaned_data.get('title')
+        text = cleaned_data.get('text')
+        category = cleaned_data.get('category')
+        location = cleaned_data.get('location')
+        pub_date = cleaned_data.get('pub_date')
+        if Post.objects.filter(title=title, text=text, category=category,
+                               location=location, pub_date=pub_date).exists():
+            raise ValidationError('Такой пост уже существует')
+        return cleaned_data
 
 
 class ProfileForm(forms.ModelForm):
