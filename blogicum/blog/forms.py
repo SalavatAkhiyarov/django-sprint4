@@ -14,6 +14,7 @@ class CreatePost(forms.ModelForm):
         exclude = ('author',)
         widgets = {
             'pub_date': forms.DateTimeInput(
+                format='%Y-%m-%dT%H:%M',
                 attrs={
                     'type': 'datetime-local'})
         }
@@ -43,9 +44,9 @@ class CommentForm(forms.ModelForm):
         fields = ('text',)
 
 
-class CustomUserCreationForm(UserCreationForm):
-    first_name = forms.CharField(label="Имя")
-    last_name = forms.CharField(label="Фамилия")
+class RegistrationForm(UserCreationForm):
+    first_name = forms.CharField(label='Имя')
+    last_name = forms.CharField(label='Фамилия')
 
     class Meta(UserCreationForm.Meta):
         model = User

@@ -1,21 +1,33 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-from .constants import MAX_LENGTH_CHAR_FIELD, STR_TITLE_LIMIT
+from .constants import MAX_LENGTH_CHAR_FIELD, STR_LIMIT
 
 User = get_user_model()
 
 
-class CreatedAtAndIsPublishedAbstract(models.Model):
-    created_at = models.DateTimeField(
-        auto_now_add=True, verbose_name="Добавлено"
-    )
+class IsPublished(models.Model):
     is_published = models.BooleanField(
         default=True,
         verbose_name="Опубликовано",
         help_text="Снимите галочку, чтобы скрыть публикацию."
     )
 
+    class Meta:
+        abstract = True
+
+
+class CreatedAt(models.Model):
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name="Добавлено"
+    )
+
+    class Meta:
+        ordering = ('created_at',)
+        abstract = True
+
+
+class CreatedAtAndIsPublishedAbstract(IsPublished, CreatedAt):
     class Meta:
         abstract = True
 
@@ -35,12 +47,12 @@ class Category(CreatedAtAndIsPublishedAbstract):
         )
     )
 
-    class Meta:
+    class Meta():
         verbose_name = "категория"
         verbose_name_plural = "Категории"
 
     def __str__(self):
-        return self.title[:STR_TITLE_LIMIT]
+        return self.title[:STR_LIMIT]
 
 
 class Location(CreatedAtAndIsPublishedAbstract):
@@ -54,7 +66,7 @@ class Location(CreatedAtAndIsPublishedAbstract):
         verbose_name_plural = "Местоположения"
 
     def __str__(self):
-        return self.name[:STR_TITLE_LIMIT]
+        return self.name[:STR_LIMIT]
 
 
 class Post(CreatedAtAndIsPublishedAbstract):
@@ -89,7 +101,11 @@ class Post(CreatedAtAndIsPublishedAbstract):
         User, on_delete=models.CASCADE, verbose_name="Автор публикации",
         related_name="posts"
     )
-    image = models.ImageField(verbose_name='Изображение', blank=True)
+    image = models.ImageField(
+        verbose_name='Изображение',
+        null=True,
+        blank=True
+    )
 
     class Meta:
         verbose_name = "публикация"
@@ -107,21 +123,27 @@ class Post(CreatedAtAndIsPublishedAbstract):
         )
 
     def __str__(self):
-        return self.title[:STR_TITLE_LIMIT]
+        return self.title[:STR_LIMIT]
 
 
-class Comments(models.Model):
+class Comments(CreatedAt):
     text = models.TextField(verbose_name="Комментарий")
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
+        verbose_name="Пост",
         related_name="comments"
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='comments'
+        verbose_name="Автор комментария",
+        related_name="comments"
     )
-    created_at = models.DateTimeField(
-        auto_now_add=True, verbose_name="Добавлено"
-    )
+
+    class Meta(CreatedAt.Meta):
+        verbose_name = "комментарий"
+        verbose_name_plural = "Комментарии"
+
+    def __str__(self):
+        return self.text[:STR_LIMIT]
