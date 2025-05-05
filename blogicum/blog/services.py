@@ -22,12 +22,10 @@ def filter_posts_by_publication(queryset):
 
 
 def annotate_and_sort_posts(queryset):
-    return (
-        queryset.annotate(
-            comment_count=Count('comments')
-        )
+    return queryset.annotate(
+        comment_count=Count('comments')
+    )\
         .order_by('-pub_date')
-    )
 
 
 def paginate(queryset, request, count=PAGINATION_ELEMENTS_COUNT):

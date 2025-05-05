@@ -23,7 +23,7 @@ class CreatedAt(models.Model):
     )
 
     class Meta:
-        ordering = ('created_at',)
+        ordering = ("created_at",)
         abstract = True
 
 
@@ -102,7 +102,7 @@ class Post(CreatedAtAndIsPublishedAbstract):
         related_name="posts"
     )
     image = models.ImageField(
-        verbose_name='Изображение',
+        verbose_name="Изображение",
         null=True,
         blank=True
     )
@@ -110,16 +110,18 @@ class Post(CreatedAtAndIsPublishedAbstract):
     class Meta:
         verbose_name = "публикация"
         verbose_name_plural = "Публикации"
-        ordering = ('-pub_date',)
+        ordering = ("-pub_date",)
         constraints = (
             models.UniqueConstraint(
                 fields=(
-                    'title',
-                    'text',
-                    'category',
-                    'location',
-                    'pub_date'),
-                name='Unique post'),
+                    "title",
+                    "text",
+                    "category",
+                    "location",
+                    "pub_date"
+                ),
+                name="Unique post"
+            ),
         )
 
     def __str__(self):

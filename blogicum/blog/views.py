@@ -46,7 +46,7 @@ def post_detail(request, post_id):
             ),
             pk=post_id
         )
-    comments = post.comments.all()
+    comments = post.comments.select_related('author')
     form = CommentForm()
     return render(
         request,
@@ -70,10 +70,12 @@ def index(request):
 
 def profile_view(request, username):
     profile = get_object_or_404(User, username=username)
-    post_list = profile.posts.all()
+    post_list = get_select_related(
+        annotate_and_sort_posts(profile.posts.all())
+    )
     if request.user != profile:
         post_list = filter_posts_by_publication(post_list)
-    page_obj = paginate(annotate_and_sort_posts(post_list), request)
+    page_obj = paginate(post_list, request)
     return render(request, 'blog/profile.html',
                   {'profile': profile, 'page_obj': page_obj})
 
